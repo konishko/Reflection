@@ -7,13 +7,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DoubleTranslator implements BaseTranslator<Double> {
     private final byte id = (byte)3;
-    private final String typeName = "double";
+    private final Set<String> typeNames = new HashSet<>(Arrays.asList("double", "java.lang.Double"));
+
 
     public byte[] toBytes(String fieldName, String type, Double value){
-        if(type.equals(typeName)) {
+        if(typeNames.contains(type)) {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
             byte[] bytedfFieldName = fieldName.getBytes();

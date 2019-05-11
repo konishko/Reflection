@@ -7,13 +7,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BooleanTranslator implements BaseTranslator<Boolean> {
     private final byte id = (byte)0;
-    private final String typeName = "boolean";
+    private final Set<String> typeNames = new HashSet<>(Arrays.asList("boolean", "java.lang.Boolean"));
 
     public byte[] toBytes(String fieldName, String type, Boolean value){
-        if(type.equals(typeName)) {
+        if(typeNames.contains(type)) {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
             byte[] bytedfFieldName = fieldName.getBytes();

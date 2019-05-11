@@ -7,13 +7,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class LongTranslator implements BaseTranslator<Long> {
     private final byte id = (byte)6;
-    private final String typeName = "long";
+    private final Set<String> typeNames = new HashSet<>(Arrays.asList("long", "java.lang.Long"));
 
     public byte[] toBytes(String fieldName, String type, Long value){
-        if(type.equals(typeName)) {
+        if(typeNames.contains(type)) {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
             byte[] bytedfFieldName = fieldName.getBytes();

@@ -5,13 +5,16 @@ import tuple.Tuple;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CharTranslator implements BaseTranslator<Character> {
     private final byte id = (byte)2;
-    private final String typeName = "char";
+    private final Set<String> typeNames = new HashSet<>(Arrays.asList("char", "java.lang.Character"));
+
 
     public byte[] toBytes(String fieldName, String type, Character value){
-        if(type.equals(typeName)) {
+        if(typeNames.contains(type)) {
             StringTranslator strTran = new StringTranslator();
             byte[] bytes = strTran.toBytes(fieldName, "java.lang.String", value.toString());
             bytes[0] = id;

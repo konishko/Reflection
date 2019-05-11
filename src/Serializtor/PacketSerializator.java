@@ -27,10 +27,22 @@ public class PacketSerializator<T> implements BaseSerializator{
     public byte[] serialize(Object obj) {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         String className = obj.getClass().getName();
-
+        String type = obj.getClass().getTypeName();
+//      в джаве есть .isPrimitive()
         try {
             byteStream.write(id);
-            byteStream.write(cIT.toBytes(className, obj.getClass().getTypeName() , obj));
+            for (BaseTranslator translator : translators) {
+                try {
+                    byte[] fieldInBytes = translator.toBytes(className, type, obj);
+                    if (fieldInBytes == null)
+                        continue;
+
+                    byteStream.write(fieldInBytes);
+                    break;
+                } catch (ClassCastException ex) {
+                    continue;
+                }
+            }
 
             return byteStream.toByteArray();
         }
@@ -43,9 +55,17 @@ public class PacketSerializator<T> implements BaseSerializator{
 
     public Object deserialize(byte[] bytes){
         if((int)bytes[0] == id) {
-            Tuple tuple = cIT.fromBytes(Arrays.copyOfRange(bytes, 1, bytes.length));
+            for (BaseTranslator translator : translators) {
+                try {
+                    Tuple tuple = translator.fromBytes(Arrays.copyOfRange(bytes, 1, bytes.length));
+                    if (tuple == null)
+                        continue;
 
-            return tuple.getValue();
+                    return  tuple.getValue();
+                } catch (ClassCastException ex) {
+                    continue;
+                }
+            }
         }
         return null;
     }

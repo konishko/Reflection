@@ -6,6 +6,7 @@ import tuple.Tuple;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class StringTranslator implements BaseTranslator<String> {
@@ -16,13 +17,13 @@ public class StringTranslator implements BaseTranslator<String> {
         if(type.equals(typeName)) {
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
-            byte[] bytedfFieldName = fieldName.getBytes();
+            byte[] bytedfFieldName = fieldName.getBytes(StandardCharsets.UTF_8);
             byte[] bytedNameLength = ByteBuffer.allocate(4).putInt(bytedfFieldName.length).array();
             byte[] bytedValue = new byte[]{};
             byte[] bytedValueLength = ByteBuffer.allocate(4).putInt(-1).array();
 
             if(value != null) {
-                bytedValue = value.getBytes();
+                bytedValue = value.getBytes(StandardCharsets.UTF_8);
                 bytedValueLength = ByteBuffer.allocate(4).putInt(bytedValue.length).array();
             }
 
@@ -44,13 +45,13 @@ public class StringTranslator implements BaseTranslator<String> {
     public Tuple<String> fromBytes(byte[] bytes){
         if((int)bytes[0] == id){
             int nameLength = ByteBuffer.wrap(Arrays.copyOfRange(bytes, 1, 5)).getInt();
-            String name = new String(Arrays.copyOfRange(bytes,5, 5 + nameLength));
+            String name = new String(Arrays.copyOfRange(bytes,5, 5 + nameLength), StandardCharsets.UTF_8);
             String value = null;
 
             int valueLength = ByteBuffer.wrap(Arrays.copyOfRange(bytes, 5 + nameLength, 9 + nameLength)).getInt();
 
             if(valueLength != -1) {
-                value = new String(Arrays.copyOfRange(bytes, 9 + nameLength, 9 + nameLength + valueLength));
+                value = new String(Arrays.copyOfRange(bytes, 9 + nameLength, 9 + nameLength + valueLength), StandardCharsets.UTF_8);
                 return new Tuple<>(name, value, 9 + nameLength + valueLength);
             }
             return new Tuple<>(name, null, 9 + nameLength);

@@ -7,15 +7,19 @@ import tuple.Tuple;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class PacketSerializator<T> implements BaseSerializator{
+public class ObjectSerializator<T> implements BaseSerializator{
     private final int id = 127;
+    private final byte[] startPacket = "?--".getBytes(StandardCharsets.UTF_8);
+    private final byte[] endPacket = "--!".getBytes(StandardCharsets.UTF_8);
+
     private ArrayList<BaseTranslator> translators = new ArrayList<>();
     private ClassInstanceTranslator cIT = new ClassInstanceTranslator();
 
-    public PacketSerializator(){
+    public ObjectSerializator(){
         this.translators.add(cIT);
     }
 
@@ -28,16 +32,19 @@ public class PacketSerializator<T> implements BaseSerializator{
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         String className = obj.getClass().getName();
         String type = obj.getClass().getTypeName();
-//      в джаве есть .isPrimitive()
+
         try {
-            byteStream.write(id);
             for (BaseTranslator translator : translators) {
                 try {
-                    byte[] fieldInBytes = translator.toBytes(className, type, obj);
-                    if (fieldInBytes == null)
+                    byte[] objectInBytes = translator.toBytes(className, type, obj);
+                    if (objectInBytes == null)
                         continue;
 
-                    byteStream.write(fieldInBytes);
+                    byteStream.write(id);
+                    byteStream.write(startPacket);
+                    byteStream.write(objectInBytes);
+                    byteStream.write(endPacket);
+
                     break;
                 } catch (ClassCastException ex) {
                     continue;
@@ -54,10 +61,11 @@ public class PacketSerializator<T> implements BaseSerializator{
     }
 
     public Object deserialize(byte[] bytes){
-        if((int)bytes[0] == id) {
+        if((int)bytes[0] == id && Arrays.equals(Arrays.copyOfRange(bytes, 1, 4) ,startPacket) &&
+           Arrays.equals(endPacket, Arrays.copyOfRange(bytes, bytes.length - 3, bytes.length))){
             for (BaseTranslator translator : translators) {
                 try {
-                    Tuple tuple = translator.fromBytes(Arrays.copyOfRange(bytes, 1, bytes.length));
+                    Tuple tuple = translator.fromBytes(Arrays.copyOfRange(bytes, 4, bytes.length - 3));
                     if (tuple == null)
                         continue;
 

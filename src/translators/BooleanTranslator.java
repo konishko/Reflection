@@ -43,8 +43,7 @@ public class BooleanTranslator implements BaseTranslator<Boolean> {
 
             boolean value;
             int intValue = bytes[5 + nameLength];
-            if(intValue > 0) value = true;
-            else value = false;
+            value = intValue > 0;
 
             return new Tuple<>(name, value, 6 + nameLength);
         }
